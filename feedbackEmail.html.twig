@@ -1,0 +1,9 @@
+Message from {{ app.request.get('name') }}:
+
+{{ app.request.get('message') }}
+
+Name: {{ app.request.get('name') }}
+E-mail: {{ app.request.get('email') }}
+
+Sending IP: {{ remote }}
+Sending Script: {{ host }} {{ self }}

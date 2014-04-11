@@ -1,0 +1,402 @@
+
+    <div class="row">
+
+        <div class="span6">
+            <h3>Including partials and components</h3>
+
+{% raw %}
+<pre><code>{% include "Bundle:Controller:action" %}
+<strong>in Symfony 2.1:</strong>
+{% render "Bundle:Controller:action" with {"max" : 3} %}
+<strong>in Symfony 2.2:</strong>
+{{ render(controller("Bundle:Controller:action", {max :3})) }}
+</code></pre>{% endraw %}
+
+            <h3>Links</h3>
+
+{% raw %}
+<pre><code>&lt;a href="{{ path('homepage') }}"&gt;Home&lt;a/&gt; //relative
+&lt;a href="{{ url('homepage') }}"&gt;Home&lt;a/&gt; //absolute
+&lt;a href="{{ path('show', {'id':article.id}) }}"&gt;Home&lt;/a&gt;
+</code></pre>{% endraw %}
+
+            <h3>Assets</h3>
+
+{% raw %}
+<pre><code>&lt;img src="{{ 'uploads/'~foto.url }}"/&gt;
+</code></pre>{% endraw %}
+
+        </div>
+
+        <div class="span6">
+
+            <h3>Debug variables in a template</h3>
+
+            {% raw %}
+            <pre><code>{{ dump(article) }}
+            </code></pre>{% endraw %}
+
+            <h3>Global TWIG variables</h3>
+
+{% raw %}
+<pre><code>app.security
+app.user
+app.request
+app.request.get('foo') //get
+app.request.request.get('foo') //post
+app.session
+app.environment
+app.debug
+</code></pre>{% endraw %}
+        </div>
+
+    </div>
+
+    <h3>TWIG TAGS</h3>
+
+    <div class="row">
+
+        <div class="span6">
+            <h4>block</h4>
+
+            <p>When a template uses inheritance and if you want to print a block multiple times, use the block function:</p>
+
+{% raw %}
+<pre><code>&lt;title&gt;{% block title %}{% endblock %}&lt;/title&gt;
+&lt;h1&gt;{{ block('title') }}&lt;/h1&gt;
+{% block body %}{% endblock %}
+</code></pre>{% endraw %}
+
+            <h4>parent</h4>
+
+            <p>When a template uses inheritance, it's possible to render the contents of the parent block when overriding a block by using the parent function:</p>
+
+{% raw %}
+<pre><code>{% extends "base.html" %}
+
+{% block sidebar %}
+&lt;h3&gt;Table Of Contents&lt;/h3&gt;
+...
+{{ parent() }}
+{% endblock %}
+</code></pre>{% endraw %}
+
+            <h4>for</h4>
+
+            <p>Loop over each item in a sequence. For example, to display a list of users provided in a variable called users:</p>
+
+{% raw %}
+<pre><code>&lt;h1&gt;Members&lt;/h1&gt;
+&lt;ul&gt;
+{% for user in users %}
+&lt;li&gt;{{ user.username|e }}&lt;/li&gt;
+{% endfor %}
+&lt;/ul&gt;
+</code></pre>{% endraw %}
+
+            <h6>The loop variable</h6>
+
+            <p>Inside of a for loop block you can access some special variables:</p>
+
+{% raw %}
+<pre><code>Variable Description
+loop.index The current iteration of the loop. (1 indexed)
+loop.index0 The current iteration of the loop. (0 indexed)
+loop.revindex The number of iterations from the end of the loop (1 indexed)
+loop.revindex0 The number of iterations from the end of the loop (0 indexed)
+loop.first True if first iteration
+loop.last True if last iteration
+loop.length The number of items in the sequence
+loop.parent The parent context
+</code></pre>{% endraw %}
+
+{% raw %}
+<pre><code>{% for user in users %}
+{{ loop.index }} - {{ user.username }}
+{% endfor %}
+</code></pre>{% endraw %}
+
+            <h4>if</h4>
+
+            <p>The if statement in Twig is comparable with the if statements of PHP.</p>
+
+            <p>In the simplest form you can use it to test if an expression evaluates to true:</p>
+
+{% raw %}
+<pre><code>{% if online == false %}
+&lt;p&gt;Our website is in maintenance mode. Please, come back later.&lt;/p&gt;
+{% endif %}
+</code></pre>{% endraw %}
+
+            <h4>raw</h4>
+
+            <p>Everything inside raw tags won't be parsed.</p>
+
+{% raw %}
+<pre><code>{% raw %}
+This variable {{foo}} won't be parsed as twig var.
+{% endraw. %}</code></pre>{% endraw %}
+
+        </div>
+
+        <div class="span6">
+            <h4>set</h4>
+
+            <p>Inside code blocks you can also assign values to variables. Assignments use the set tag and can have multiple targets:</p>
+
+{% raw %}
+<pre><code>{% set foo = 'foo' %}
+{% set foo = [1, 2] %}
+{% set foo = {'foo': 'bar'} %}
+{% set foo = 'foo' ~ 'bar' %}
+{% set foo, bar = 'foo', 'bar' %}
+</code></pre>{% endraw %}
+
+            <h4>filter</h4>
+
+            <p>Filter sections allow you to apply regular Twig filters on a block of template data. Just wrap the code in the special filter section:</p>
+
+{% raw %}
+<pre><code>{% filter upper %}
+This text becomes uppercase
+{% endfilter %}
+</code></pre>{% endraw %}
+
+            <p>You can also chain filters:</p>
+
+{% raw %}
+<pre><code>{% filter lower|escape %}
+&lt;strong&gt;SOME TEXT&lt;/strong&gt;
+{% endfilter %}
+</code></pre>{% endraw %}
+
+            <h4>macro</h4>
+
+            <p>Macros are comparable with functions in regular programming languages. They are useful to put often used HTML idioms into reusable elements to not repeat yourself.</p>
+
+            <p>Here is a small example of a macro that renders a form element:</p>
+
+{% raw %}
+<pre><code>{% macro input(name, value, type, size) %}
+&lt;input type="{{ type|default('text') }}" name="{{ name }}" value="{{ value|e }}" size="{{ size|default(20) }}" /&gt;
+{% endmacro %}
+</code></pre>{% endraw %}
+
+            <p>Macros differs from native PHP functions in a few ways:</p>
+
+            <ul>
+                <li>Default argument values are defined by using the default filter in the macro body;</li>
+                <li>Arguments of a macro are always optional.</li>
+            </ul>
+            <p>But as PHP functions, macros don't have access to the current template variables.</p>
+
+            <p>Macros can be defined in any template, and need to be "imported" before being used (see the documentation for the import tag for more information):</p>
+
+{% raw %}
+<pre><code>{% import "forms.html" as forms %}
+</code></pre>{% endraw %}
+
+            <p>The above import call imports the "forms.html" file (which can contain only macros, or a template and some macros), and import the functions as items of the forms variable.</p>
+
+            <p>The macro can then be called at will:</p>
+
+{% raw %}
+<pre><code>&lt;p&gt;{{ forms.input('username') }}&lt;/p&gt;
+&lt;p&gt;{{ forms.input('password', null, 'password') }}&lt;/p&gt;
+</code></pre>{% endraw %}
+
+            <p>If macros are defined and used in the same template, you can use the special _self variable to import them:</p>
+
+{% raw %}
+<pre><code>{% import _self as forms %}
+&lt;p&gt;{{ forms.input('username') }}&lt;/p&gt;
+</code></pre>{% endraw %}
+
+        </div>
+
+    </div>
+
+    <h3>TWIG FILTERS</h3>
+
+    <div class="row">
+
+        <div class="span6">
+
+            <h4>date</h4>
+
+            {% raw %}
+<pre><code>{{ post.published_at|date("m/d/Y") }}
+{{ post.published_at|date("m/d/Y", "Europe/Paris") }}
+</code></pre>{% endraw %}
+
+            <h4>date_modify</h4>
+
+{% raw %}
+<pre><code>{{ post.published_at|date_modify("+1 day")|date("m/d/Y") }}
+</code></pre>{% endraw %}
+
+            <h4>format</h4>
+
+{% raw %}
+<pre><code>{{ "I like %s and %s."|format(foo, "bar") }}
+</code></pre>{% endraw %}
+
+            <h4>replace</h4>
+
+{% raw %}
+<pre><code>{{ "I like %this% and %that%."|replace({'%this%': foo, '%that%': "bar"}
+</code></pre>{% endraw %}
+
+            <h4>number_format</h4>
+
+{% raw %}
+<pre><code>{{ 200.35|number_format }}
+{{ 9800.333|number_format(2, '.', ',') }}
+</code></pre>{% endraw %}
+
+            <h4>url_encode</h4>
+
+{% raw %}
+<pre><code>{{ data|url_encode() }}
+</code></pre>{% endraw %}
+
+            <h4>json_encode</h4>
+
+{% raw %}
+<pre><code>{{ data|json_encode() }}
+</code></pre>{% endraw %}
+
+            <h4>convert_encoding</h4>
+
+{% raw %}
+<pre><code>{{ data|convert_encoding('UTF-8', 'iso-2022-jp') }}
+</code></pre>{% endraw %}
+
+            <h4>title</h4>
+
+{% raw %}
+<pre><code>{{ 'my first car'|title }}
+{# outputs 'My First Car' #}
+</code></pre>{% endraw %}
+
+            <h4>capitalize</h4>
+
+{% raw %}
+<pre><code>{{ 'my first car'|capitalize }}
+</code></pre>{% endraw %}
+
+            <h4>nl2br</h4>
+
+{% raw %}
+<pre><code>{{ "I like Twig.\nYou will like it too."|nl2br }}
+    {# outputs
+
+    I like Twig.&lt;br /&gt;
+    You will like it too.
+
+    #}
+</code></pre>{% endraw %}
+
+            <h4>raw</h4>
+
+{% raw %}
+<pre><code>{{ var|raw }} {# var won't be escaped #}
+</code></pre>{% endraw %}
+
+            <h4>trim</h4>
+
+{% raw %}
+<pre><code>{{ ' I like Twig.'|trim('.') }}
+</code></pre>{% endraw %}
+        </div>
+
+        <div class="span6">
+            <h4>upper</h4>
+
+{% raw %}
+<pre><code>{{ 'welcome'|upper }}
+</code></pre>{% endraw %}
+
+            <h4>lower</h4>
+
+{% raw %}
+<pre><code>{{ 'WELCOME'|lower }}
+</code></pre>{% endraw %}
+
+            <h4>striptags</h4>
+
+{% raw %}
+<pre><code>{% some_html|striptags %}
+</code></pre>{% endraw %}
+
+            <h4>join</h4>
+
+{% raw %}
+<pre><code>{{ [1, 2, 3]|join('|') }}
+{# returns 1|2|3 #}
+</code></pre>{% endraw %}
+
+            <h4>split</h4>
+
+{% raw %}
+<pre><code>{{ "one,two,three"|split(',') }}
+{# returns ['one', 'two', 'three'] #}
+</code></pre>{% endraw %}
+
+            <h4>reverse</h4>
+
+{% raw %}
+<pre><code>{% for use in users|reverse %}
+    ...
+{% endfor %}
+</code></pre>{% endraw %}
+
+            <h4>abs</h4>
+
+{% raw %}
+<pre><code>{{ number|abs }}
+</code></pre>{% endraw %}
+
+            <h4>length</h4>
+
+{% raw %}
+<pre><code>{% if users|length &gt; 10 %}
+    ...
+{% endif %}
+</code></pre>{% endraw %}
+
+            <h4>sort</h4>
+
+{% raw %}
+<pre><code>{% for use in users|sort %}
+    ...
+{% endfor %}
+</code></pre>{% endraw %}
+
+            <h4>default</h4>
+
+{% raw %}
+<pre><code>{{ var|default('var is not defined') }}
+</code></pre>{% endraw %}
+
+            <h4>keys</h4>
+
+{% raw %}
+<pre><code>{% for key in array|keys %}
+    ...
+{% endfor %}
+</code></pre>{% endraw %}
+
+            <h4>escape</h4>
+
+{% raw %}
+<pre><code>{{ user.username|e }}
+{# is equivalent to #}
+{{ user.username|e('html') }}
+{{ user.username|e('css') }}
+{{ user.username|e('js') }}
+</code></pre>{% endraw %}
+
+        </div>
+
+    </div>

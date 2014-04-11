@@ -1,0 +1,356 @@
+<h4>ORM DESIGNER &amp; Doctrine ORM</h4>
+<p>Symfony comes with Doctrine ORM framework. Doctrine has <a href="http://www.doctrine-project.org" target="_blank" onClick="recordOutboundLink(this, 'Others', 'http://www.doctrine-project.org');return false;">extensive documentation</a>, but you can start using it right away without a need to dive too deep. <a href="http://www.orm-designer.com" target="_blank" onClick="recordOutboundLink(this, 'Others', 'http://www.orm-designer.com');return false;">ORM Designer</a> can make your life with Doctrine and other ORM frameworks much easier.</p>
+<p>ORM Designer is a tool for modeling ORM in a very comfortable way. You can continuously export your model and even edit exported classes without losing the changes on consequent exports. What’s also great about ORM Designer is that it can construct a model from an existing project. And it can do so in a very colourful and well-arranged way :-).</p>
+<div class="ormd-image"><img src="{{ asset('images/orm/ormd_main.jpg')}}" width="790" height="552"/></div>
+<p>Start by <a href="http://www.orm-designer.com" target="_blank" onClick="recordOutboundLink(this, 'Others', 'http://www.orm-designer.com');return false;">downloading ORM Designer</a> and installing on your computer. ORM Designer works natively on Mac OS X, Windows and Linux.</p>
+<ul class="indent">
+    <li>
+        <h4>1. Create a new ORM Designer project</h4>
+        <p>Pick your project name and select <strong>MVC Framework Symfony2, ORM Framework Doctrine2 and set a Project Path</strong>. Project Path should be the Symfony2 project root.</p>
+        <div class="ormd-image"><img src="{{ asset('images/orm/ormd_create.jpg') }}" width="616" height="410"/></div>
+    </li>
+    <li>
+        <h4>1a. Import existing project (Optional)</h4>
+        <p>Insert existing project name and select <strong>MVC Framework Symfony2, ORM Framework Doctrine2 and set a Project Path</strong>. Project Path should be the Symfony2 project root.</p>
+        <div class="ormd-image"><img src="{{ asset('images/orm/ormd_import_wizard.jpg') }}" width="616" height="410"/></div>
+        <p>Select all the entities you want to import:</p>
+        <div class="ormd-image"><img src="{{ asset('images/orm/ormd_import.jpg')}}" width="550" height="335"/></div>
+    </li>
+    <li>
+        <h4>2. Set export format</h4>
+        <p>When creating a new project you need to set the export format. Double click on the module title as shown by the red arrow. Module editor will be opened and you can set export format (<strong>Doctrine2PHP for Doctrine2 annotations, Doctrine2XML/Doctrine2YML for XML/YML format</strong>). You should also set relative path, so the class are exported correctly to your project structure.</p>
+        <div class="ormd-image"><img src="{{ asset('images/orm/ormd_module_editor.jpg') }}" width="671" height="397"/></div>
+    </li>
+    <li>
+        <h4>3. Export project</h4>
+        <p>Press <em>“Export to ORM”</em> and a table summarizing exported changes to the model will be displayed.</p>
+        <div class="ormd-image"><img src="{{ asset('images/orm/ormd_export.jpg') }}" width="790" height="455"/></div>
+    </li>
+</ul>
+<h3>Working with the model</h3>
+<p>Your first model is now exported. Click Export to ORM button whenever you want to update your schema definitions.</p>
+<h4>Create new Entities</h4>
+<p>Select tool Entity from the top ribbon (or press <em>Ctrl + T</em>) and click in your model to place the new entity. Add required fields. You can navigate with keyboard shortcuts:<p>
+<ul>
+    <li><em>Insert</em>: to add a new field</li>
+    <li><em>Ctrl+Up arrow</em>: to move field up</li>
+    <li><em>Ctrl+Down arrow</em>: to move field down</li>
+    <li><em>Tab</em>: to skip to the next edit value</li>
+    <li><em>Ctrl+Insert</em>: to insert a field above currently highlighted row</li>
+</ul>
+<div class="ormd-image"><img src="{{ asset('images/orm/ormd_entity.jpg')}}" width="790" height="459"/></div>
+<h4>Create new Association</h4>
+<p>Select tool Association from the top ribbon (or press Ctrl + R) and select the entities you want to create association between. By filling either one or both aliases you can set the Association as an unidirectional or bidirectional.</p>
+<div class="ormd-image"><img src="{{ asset('images/orm/ormd_association.jpg')}}" width="463" height="513"/></div>
+<h4>Create new Many-Many Association</h4>
+<p>Select tool ManyToMany from the top ribbon (or press Ctrl + M) and select the entities you want to create association between. Again you need to fill aliases and additionally also the MN Entity name. If you don’t want to type it manually, you can use the naming tool (red arrow) which follows the usual naming conventions.</p>
+<div class="ormd-image"><img src="{{ asset('images/orm/ormd_many2many.jpg')}}" width="459" height="537"/></div>
+<h4>Set Doctrine ORM properties</h4>
+<p>You can set ORM properties using the property window in the lower bottom corner of ORM Designer. Property window shows you available properties based on the object type (Entity/Relation/Field).</p>
+<div class="ormd-image"><img src="{{ asset('images/orm/ormd_properties.jpg')}}" width="276" height="387"/></div>
+<h4>Generate doctrine schema</h4>
+<p>If you have selected XML or YML format you need to generate the PHP classes <strong>generate:doctrine:entities [bundleNamespace]</strong>. This will automatically create all entity and repository classes for us. Easy, isn’t it? If you have been exporting to PHP annotations you’re ready to go.</p>
+
+<!-- ORM Designer code end -->
+
+<h4>Persistint object into the database</h4>
+
+<p>Now that you have a mapped Product entity and corresponding product table, you're ready to persist
+    data to the database. From inside a controller, this is pretty easy. Add the following method to the
+    DefaultController of the bundle:</p>
+
+{% raw %}<pre><code>// src/Acme/StoreBundle/Controller/DefaultController.php
+
+        use Acme\StoreBundle\Entity\Product;
+        use Symfony\Component\HttpFoundation\Response;
+
+        public function createAction()
+        {
+        $product = new Product();
+        $product-&gt;setName('A Foo Bar');
+        $product-&gt;setPrice('19.99');
+        $product-&gt;setDescription('Lorem ipsum dolor');
+
+        $em = $this-&gt;getDoctrine()-&gt;getManager();
+        $em-&gt;persist($product); //marks object to be saved in the next transaction.
+        $em-&gt;flush(); //performs all saves and transactions.
+
+        return new Response('Created product id '.$product-&gt;getId());
+        }
+    </code></pre>{% endraw %}
+
+<h4>Fetching object form database</h4>
+
+{% raw %}<pre><code>$product = $this-&gt;getDoctrine()
+        -&gt;getRepository('AcmeStoreBundle:Product')
+        -&gt;find($id);
+    </code></pre>{% endraw %}
+
+<p>Once you have your repository, you have access to all sorts of helpful methods:</p>
+
+{% raw %}<pre><code>// query by the primary key (usually "id")
+        $product = $repository-&gt;find($id);
+
+        // dynamic method names to find based on a column value
+        $product = $repository-&gt;findOneById($id);
+        $product = $repository-&gt;findOneByName('foo');
+
+        // find *all* products
+        $products = $repository-&gt;findAll();
+
+        // find a group of products based on an arbitrary column value
+        $products = $repository-&gt;findByPrice(19.99);
+
+        // query for one product matching be name and price
+        $product = $repository-&gt;findOneBy(array('name' =&gt; 'foo', 'price' =&gt; 19.99));
+    </code></pre>{% endraw %}
+
+<h4>Querying for Objects with DQL</h4>
+
+{% raw %}<pre><code>$em = $this-&gt;getDoctrine()-&gt;getManager();
+        $query = $em-&gt;createQuery(
+        'SELECT p FROM AcmeStoreBundle:Product p WHERE p.price &gt; :price ORDER BY p.price ASC'
+        )-&gt;setParameter('price', '19.99');
+        $products = $query-&gt;getResult();
+    </code></pre>{% endraw %}
+
+<p>If you need to fetch only one result.
+    $product = $query-&gt;getSingleResult();</p>
+
+<p>The getSingleResult() method throws a Doctrine\ORM\NoResultException exception if no
+    results are returned and a Doctrine\ORM\NonUniqueResultException if more than one result is
+    returned. If you use this method, you may need to wrap it in a try-catch block and ensure that only
+    one result is returned (if you're querying on something that could feasibly return more than one
+    result):</p>
+
+{% raw %}<pre><code>$query = $em-&gt;createQuery('SELECT ...')
+        -&gt;setMaxResults(1);
+        try {
+        $product = $query-&gt;getSingleResult();
+        } catch (\Doctrine\Orm\NoResultException $e) {
+        $product = null;
+        }
+        // ...
+    </code></pre>{% endraw %}
+
+<h4>Using Doctrine's Query Builder</h4>
+
+{% raw %}<pre><code>$repository = $this-&gt;getDoctrine()-&gt;getRepository('AcmeStoreBundle:Product');
+        $query = $repository-&gt;createQueryBuilder('p')
+        -&gt;where('p.price &gt; :price')
+        -&gt;setParameter('price', '19.99')
+        -&gt;orderBy('p.price', 'ASC')
+        -&gt;getQuery();
+        $products = $query-&gt;getResult();
+    </code></pre>{% endraw %}
+
+<h4>Custom Repository Classes</h4>
+
+<p>In the previous sections, you began constructing and using more complex queries from inside a
+    controller. In order to isolate, test and reuse these queries, it's a good idea to create a custom repository
+    class for your entity and add methods with your query logic there.
+    To do this, add the name of the repository class to your mapping definition.</p>
+
+{% raw %}<pre><code>// src/Acme/StoreBundle/Entity/Product.php
+        namespace Acme\StoreBundle\Entity;
+
+        use Doctrine\ORM\Mapping as ORM;
+
+        /**
+        * @ORM\Entity(repositoryClass="Acme\StoreBundle\Entity\ProductRepository")
+        */
+        class Product
+        {
+        //...
+        }
+    </code></pre>{% endraw %}
+
+<p>Or you can use CLI command:</p>
+
+{% raw %}<pre><code>$ php app/console doctrine:generate:entities Acme
+    </code></pre>{% endraw %}
+
+<p>Now let's create a custom method inside our Repository class:</p>
+
+{% raw %}<pre><code>// src/Acme/StoreBundle/Entity/ProductRepository.php
+        namespace Acme\StoreBundle\Entity;
+
+        use Doctrine\ORM\EntityRepository;
+
+        class ProductRepository extends EntityRepository
+        {
+        public function findAllOrderedByName()
+        {
+        return $this-&gt;getEntityManager()
+        -&gt;createQuery('SELECT p FROM AcmeStoreBundle:Product p ORDER BY p.name ASC')
+        -&gt;getResult();
+        }
+        }
+    </code></pre>{% endraw %}
+
+<p>You can use this new method just like the default finder methods of the repository:</p>
+
+{% raw %}<pre><code>$em = $this-&gt;getDoctrine()-&gt;getManager();
+        $products = $em-&gt;getRepository('AcmeStoreBundle:Product')
+        -&gt;findAllOrderedByName();
+    </code></pre>{% endraw %}
+
+<h4>Saving Related Entities</h4>
+
+<p>Now, let's see the code in action. Imagine you're inside a controller:</p>
+
+{% raw %}<pre><code>// ...
+        use Acme\StoreBundle\Entity\Category;
+        use Acme\StoreBundle\Entity\Product;
+        use Symfony\Component\HttpFoundation\Response;
+
+        class DefaultController extends Controller
+        {
+        public function createProductAction()
+        {
+        $category = new Category();
+        $category-&gt;setName('Main Products');
+
+        $product = new Product();
+        $product-&gt;setName('Foo');
+        $product-&gt;setPrice(19.99);
+        // relate this product to the category
+        $product-&gt;setCategory($category);
+
+        $em = $this-&gt;getDoctrine()-&gt;getManager();
+        $em-&gt;persist($category);
+        $em-&gt;persist($product);
+        $em-&gt;flush();
+
+        return new Response(
+        'Created product id: '.$product-&gt;getId().' and category id:'.$category-&gt;getId()
+        );
+        }
+        }
+    </code></pre>{% endraw %}
+
+<div class="row">
+
+    <div class="span6">
+        <h4>Lifecycle Callbacks</h4>
+
+        <p>Sometimes, you need to perform an action right before or after an entity is inserted, updated, or deleted.
+            These types of actions are known as "lifecycle" callbacks, as they're callback methods that you need to
+            execute during different stages of the lifecycle of an entity (e.g. the entity is inserted, updated, deleted,
+            etc).</p>
+
+        {% raw %}<pre><code>/**
+                * @ORM\Entity()
+                * @ORM\HasLifecycleCallbacks()
+                */
+                class Product
+                {
+                // ...
+                }
+
+                /**
+                * @ORM\PrePersist
+                */
+                public function setCreatedValue()
+                {
+                $this-&gt;created = new \DateTime();
+                }
+            </code></pre>{% endraw %}
+
+        <p>This can be repeated for any of the other lifecycle events, which include:</p>
+
+        <ul class="left">
+            <li>preRemove</li>
+            <li>postRemove</li>
+            <li>prePersist</li>
+            <li>postPersist</li>
+            <li>preUpdate</li>
+            <li>postUpdate</li>
+            <li>postLoad</li>
+            <li>loadClassMetadata</li>
+        </ul>
+    </div>
+
+    <div class="span6">
+
+        <h4>Doctrine Field Types Reference</h4>
+
+        <p>Doctrine comes with a large number of field types available. Each of these maps a PHP data type to a
+            specific column type in whatever database you're using. The following types are supported in Doctrine:</p>
+
+        <ul>
+            <li><strong>Strings</strong>
+
+                <ul>
+                    <li>string (used for shorter strings)</li>
+                    <li>text (used for larger strings)</li>
+                </ul>
+            </li>
+            <li><strong>Numbers</strong>
+
+                <ul>
+                    <li>integer</li>
+                    <li>smallint</li>
+                    <li>bigint</li>
+                    <li>decimal</li>
+                    <li>float</li>
+                </ul>
+            </li>
+            <li><strong>Dates and Times (use a DateTime object for these fields in PHP)</strong>
+
+                <ul>
+                    <li>date</li>
+                    <li>time</li>
+                    <li>datetime</li>
+                </ul>
+            </li>
+            <li><strong>Other Types</strong>
+
+                <ul>
+                    <li>boolean</li>
+                    <li>object (serialized and stored in a CLOB field)</li>
+                    <li>array (serialized and stored in a CLOB field)</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h4>Persistint object into the database</h4>
+<p>Now that you have a mapped Product entity and corresponding product table, you're ready to persist
+    data to the database. From inside a controller, this is pretty easy. Add the following method to the
+    DefaultController of the bundle:</p>
+<pre><code>// src/Acme/StoreBundle/Controller/DefaultController.php
+
+        use Acme\StoreBundle\Entity\Product;
+        use Symfony\Component\HttpFoundation\Response;
+
+        public function createAction()
+        {
+        $product = new Product();
+        $product-&gt;setName('A Foo Bar');
+        $product-&gt;setPrice('19.99');
+        $product-&gt;setDescription('Lorem ipsum dolor');
+
+        $em = $this-&gt;getDoctrine()-&gt;getManager();
+        $em-&gt;persist($product); //marks object to be saved in the next transaction.
+        $em-&gt;flush(); //performs all saves and transactions.
+
+        return new Response('Created product id '.$product-&gt;getId());
+        }
+    </code></pre>

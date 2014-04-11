@@ -1,0 +1,382 @@
+
+    <p>Security is a two-step process whose goal is to prevent a user from accessing a resource that he/she should not have access to.</p>
+
+    <p><strong>Authentication</strong></p>
+
+    <ul>
+        <li>Login form</li>
+        <li>HTTP Authentication</li>
+        <li>HTTP digest</li>
+        <li>X.509 certs</li>
+        <li>Custom auth methods</li>
+    </ul>
+    <p><strong>Authorization</strong></p>
+
+    <ul>
+        <li>Access control for URL</li>
+        <li>Secure object and methods</li>
+        <li>Access control lists (ACLs)</li>
+    </ul>
+    <h3>Basic Example: HTTP Authentication</h3>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    firewalls:
+        secured_area:
+            pattern:    ^/
+            anonymous: ~
+            http_basic:
+                realm: "Secured Demo Area"
+
+    access_control:
+        - { path: ^/admin, roles: ROLE_ADMIN }
+
+    providers:
+        in_memory:
+            memory:
+                users:
+                    ryan:  { password: ryanpass, roles: 'ROLE_USER' }
+                    admin: { password: kitten, roles: 'ROLE_ADMIN' }
+
+    encoders:
+        Symfony\Component\Security\Core\User\User: plaintext
+</code></pre>{% endraw %}
+
+    <h3>Using a Traditional Login Form</h3>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    firewalls:
+        secured_area:
+            pattern:    ^/
+            anonymous: ~
+            form_login:
+                login_path:  /login
+                check_path:  /login_check
+</code></pre>{% endraw %}
+
+    <p>If you don't need to customize your login_path or check_path values (the values used here are the default values), you can shorten your configuration:</p>
+
+{% raw %}<pre><code>form_login: ~
+</code></pre>{% endraw %}
+
+    <p>Now we need to create the login routes:</p>
+
+{% raw %}<pre><code># app/config/routing.yml
+login:
+    pattern: /login
+    defaults: { _controller: AcmeSecurityBundle:Security:login }
+
+login_check:
+    pattern: /login_check
+</code></pre>{% endraw %}
+
+    <p>Next, create the controller that will display the login form:</p>
+
+    {% raw %}
+<pre><code>// src/Acme/SecurityBundle/Controller/SecurityController.php;
+namespace Acme\SecurityBundle\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Security\Core\SecurityContext;
+
+class SecurityController extends Controller
+{
+   public function loginAction()
+   {
+       $request = $this->getRequest();
+       $session = $request->getSession();
+
+       // get the login error if there is one
+       if ($request->attributes->has(SecurityContext::AUTHENTICATION_ERROR)) {
+           $error = $request->attributes->get(SecurityContext::AUTHENTICATION_ERROR);
+       } else {
+           $error = $session->get(SecurityContext::AUTHENTICATION_ERROR);
+           $session->remove(SecurityContext::AUTHENTICATION_ERROR);
+       }
+
+       return $this->render('AcmeSecurityBundle:Security:login.html.twig', array(
+           // last username entered by the user
+           'last_username' => $session->get(SecurityContext::LAST_USERNAME),
+           'error'         => $error,
+       ));
+   }
+}
+</code></pre>{% endraw %}
+
+    <p>Finally, create the corresponding template:</p>
+
+    <pre><code>{% filter escape %}{% raw %}{# src/Acme/SecurityBundle/Resources/views/Security/login.html.twig #}
+{% if error %}
+    <div>{{ error.message }}</div>
+{% endif %}
+
+<form action="{{ path('login_check') }}" method="post">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="_username" value="{{ last_username }}" />
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="_password" />
+
+    {#If you want to control the URL the user is redirected to on success (more details below) #}
+    <input type="hidden" name="_target_path" value="/account" />
+
+    <button type="submit">login</button>
+    </form>{% endraw %}
+{% endfilter %}
+</code></pre>
+
+    <h3>Securing Specific URL Patterns</h3>
+
+    <p>The most basic way to secure part of your application is to secure an entire URL pattern. You've seen this already in the first example of this chapter, where anything matching the regular expression pattern ^/admin requires the ROLE_ADMIN role.</p>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    # ...
+    access_control:
+        - { path: ^/admin/users, roles: ROLE_SUPER_ADMIN }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+</code></pre>{% endraw %}
+
+    <h3>Securing by IP</h3>
+
+    <p>Here is an example of how you might secure this route from outside access:</p>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+# ...
+access_control:
+    - { path: ^/_internal, roles: IS_AUTHENTICATED_ANONYMOUSLY, ip: 127.0.0.1 }
+</code></pre>{% endraw %}
+
+    <h3>Securing by Channel</h3>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+# ...
+access_control:
+    - { path: ^/cart/checkout, roles: IS_AUTHENTICATED_ANONYMOUSLY, requires_channel: https }
+</code></pre>{% endraw %}
+
+    <h3>Securing a Controller</h3>
+
+{% raw %}<pre><code>/ ...
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+
+public function helloAction($name)
+{
+    if (false === $this-&gt;get('security.context')-&gt;isGranted('ROLE_ADMIN')) {
+        throw new AccessDeniedException();
+    }
+
+// ...
+}
+</code></pre>{% endraw %}
+
+    <p>You can also choose to install and use the optional JMSSecurityExtraBundle, which can secure your controller using annotations:</p>
+
+{% raw %}<pre><code>// ...
+use JMS\SecurityExtraBundle\Annotation\Secure;
+
+/**
+* @Secure(roles="ROLE_ADMIN")
+*/
+public function helloAction($name)
+{
+// ...
+}
+</code></pre>{% endraw %}
+
+    <h3>Users</h3>
+
+    <p><strong>User Providers</strong></p>
+
+{% raw %}
+<pre><code># app/config/security.yml
+security:
+    # ...
+    providers:
+        default_provider:
+            memory:
+                users:
+                    ryan: { password: ryanpass, roles: 'ROLE_USER' }
+                    admin: { password: kitten, roles: 'ROLE_ADMIN' }
+</code></pre>{% endraw %}
+
+    <p><strong>Loading Users from the Database</strong></p>
+
+    <p>Next, configure an entity user provider, and point it to your User class:</p>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+providers:
+    main:
+        entity: { class: Acme\UserBundle\Entity\User, property: username }
+</code></pre>{% endraw %}
+
+    <h3>Encoding the User's Password</h3>
+
+{% raw %}
+<pre><code># app/config/security.yml
+security:
+    # ...
+    providers:
+        in_memory:
+            memory:
+                users:
+                    ryan:  { password: bb87a29949f3a1ee0559f8a57357487151281386, roles: 'ROLE_USER' }
+                    admin: { password: 74913f5cd5f61ec0bcfdb775414c2fb3d161b620, roles: 'ROLE_ADMIN' }
+
+    encoders:
+        Symfony\Component\Security\Core\User\User:
+            algorithm:   sha1
+            iterations: 1
+            encode_as_base64: false
+        Acme\UserBundle\Entity\User: sha512 //user comes from database
+</code></pre>{% endraw %}
+
+    <p>To encode the password you can use some online functions such as
+        <a href="http://www.functions-online.com/sha1.html">functions-online.com</a></p>
+
+    <h3>Determine the hasing password in a controller</h3>
+
+{% raw %}<pre><code>$factory = $this-&gt;get('security.encoder_factory');
+$user = new Acme\UserBundle\Entity\User();
+
+$encoder = $factory-&gt;getEncoder($user);
+$password = $encoder-&gt;encodePassword('ryanpass', $user-&gt;getSalt());
+$user-&gt;setPassword($password);
+</code></pre>{% endraw %}
+
+    <h3>Retrieving the User Object</h3>
+
+    <p>After authentication, the User object of the current user can be accessed via the security.context service.</p>
+
+{% raw %}<pre><code>public function indexAction()
+{
+    $user = $this-&gt;get('security.context')-&gt;getToken()-&gt;getUser();
+    //or
+    $user = $this-&gt;getUser();
+}
+</code></pre>{% endraw %}
+
+    <p>You can also retrieve current user in a twig template by:</p>
+
+{% raw %}<pre><code>&lt;p&gt;Username: {{ app.user.username }}&lt;/p&gt;
+</code></pre>{% endraw %}
+
+    <h3>Using Multiple User Providers</h3>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    providers:
+        chain_provider:
+            chain:
+                providers: [in_memory, user_db]
+        in_memory:
+            memory:
+                users:
+                    foo: { password: test }
+        user_db:
+            entity: { class: Acme\UserBundle\Entity\User, property: username }
+</code></pre>{% endraw %}
+
+    <p>You can also configure the firewall or individual authentication mechanisms to use a specific provider. Again, unless a provider is specified explicitly, the first provider is always used:</p>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    firewalls:
+        secured_area:
+            # ...
+            provider: user_db
+            http_basic:
+                realm: "Secured Demo Area"
+                provider: in_memory
+            form_login: ~
+</code></pre>{% endraw %}
+
+    <p>For more information about user provider and firewall configuration, see the
+        <a href="http://symfony.com/doc/current/reference/configuration/security.html">Security Configuration Reference</a>.
+    </p>
+
+    <h3>Roles</h3>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    role_hierarchy:
+        ROLE_ADMIN:       ROLE_USER
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+</code></pre>{% endraw %}
+
+    <h3>Logging Out</h3>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    firewalls:
+        secured_area:
+            # ...
+            logout:
+                path:   /logout
+                target: /
+</code></pre>{% endraw %}
+
+    <p>and define the route:</p>
+
+{% raw %}<pre><code># app/config/routing.yml
+logout:
+    pattern: /logout
+</code></pre>{% endraw %}
+
+    <h3>Access Control in Templates</h3>
+
+    <p><strong>Twig</strong></p>
+
+{% raw %}<pre><code>{% if is_granted('ROLE_ADMIN') %}
+    &lt;a href="..."&gt;Delete&lt;/a&gt;
+{% endif %}
+</code></pre>{% endraw %}
+
+    <h3>Access Control in Controllers</h3>
+
+{% raw %}
+<pre><code>public function indexAction()
+{
+    // show different content to admin users
+    if ($this-&gt;get('security.context')-&gt;isGranted('ROLE_ADMIN')) {
+        // Load admin content here
+    }
+    // load other regular content here
+}
+</code></pre>{% endraw %}
+
+    <h3>Switching users</h3>
+
+    <p>Sometimes, it's useful to be able to switch from one user to another without having to logout and login again (for instance when you are debugging or trying to understand a bug a user sees that you can't reproduce). This can be easily done by activating the switch_user firewall listener:</p>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    firewalls:
+        main:
+            # ...
+            switch_user: true
+</code></pre>{% endraw %}
+
+    <p>Switch user by:</p>
+
+{% raw %}<pre><code>http://example.com/somewhere?_switch_user=thomas
+</code></pre>{% endraw %}
+
+    <p>and back to normal user:</p>
+
+{% raw %}<pre><code>http://example.com/somewhere?_switch_user=_exit
+</code></pre>{% endraw %}
+
+    <p>Secure this behaviour:</p>
+
+{% raw %}<pre><code># app/config/security.yml
+security:
+    firewalls:
+        main:
+            # ...
+            switch_user: { role: ROLE_ADMIN, parameter: _want_to_be_this_user }
+</code></pre>{% endraw %}

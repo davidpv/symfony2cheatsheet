@@ -1,0 +1,129 @@
+
+    <p>Translations are handled by a Translator service that uses the user's locale to lookup and return translated messages. Before using it, enable the Translator in your configuration:</p>
+
+{% raw %}<pre><code># app/config/config.yml
+framework:
+    translator: { fallback: en }
+    default_locale: en
+</code></pre>{% endraw %}
+
+    <p><strong>Basic translation</strong></p>
+
+{% raw %}<pre><code>$t = $this-&gt;get('translator')-&gt;trans('Symfony2 is great');
+$t = $this-&gt;get('translator')-&gt;trans('Hello %name%', array('%name%' =&gt; $name));
+</code></pre>{% endraw %}
+
+    <p>When this code is executed, Symfony2 will attempt to translate the message "Symfony2 is great" based on the locale of the user.</p>
+
+{% raw %}<pre><code>&lt;!-- messages.fr.xliff --&gt;
+&lt;?xml version="1.0"?&gt;
+&lt;xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2"&gt;
+    &lt;file source-language="en" datatype="plaintext" original="file.ext"&gt;
+        &lt;body&gt;
+            &lt;trans-unit id="1"&gt;
+            &lt;source&gt;Symfony2 is great&lt;/source&gt;
+            &lt;target&gt;J'aime Symfony2&lt;/target&gt;
+            &lt;/trans-unit&gt;
+            &lt;trans-unit id="2"&gt;
+            &lt;source&gt;Hello %name%&lt;/source&gt;
+            &lt;target&gt;Bonjour %name%&lt;/target&gt;
+            &lt;/trans-unit&gt;
+        &lt;/body&gt;
+    &lt;/file&gt;
+&lt;/xliff&gt;
+</code></pre>{% endraw %}
+
+    <p>Each time you create a new translation resource (or install a bundle that includes a translation resource), be sure to clear your cache so that Symfony can discover the new translation resource:</p>
+
+    <p><strong>Using Real or Keyword Messages</strong></p>
+
+{% raw %}<pre><code>$t = $translator-&gt;trans('Symfony2 is great');
+$t = $translator-&gt;trans('symfony2.great');
+</code></pre>{% endraw %}
+
+    <p>In the first method, messages are written in the language of the default locale (English in this case). That message is then used as the "id" when creating translations.
+        In the second method, messages are actually "keywords" that convey the idea of the message. The keyword message is then used as the "id" for any translations. In this case, translations must be made for the default locale (i.e. to translate symfony2.great to Symfony2 is great).</p>
+
+{% raw %}<pre><code>symfony2.is.great: Symfony2 is great
+symfony2.is.amazing: Symfony2 is amazing
+symfony2.has.bundles: Symfony2 has bundles
+user.login: Login
+</code></pre>{% endraw %}
+
+    <p><strong>Using Message Domains</strong></p>
+
+    <p>When translating strings that are not in the default domain (messages), you must specify the domain as the third argument of trans():</p>
+
+{% raw %}<pre><code>* messages.fr.xliff
+* admin.fr.xliff
+* navigation.fr.xliff
+
+$this-&gt;get('translator')-&gt;trans('Symfony2 is great', array(), 'admin');
+</code></pre>{% endraw %}
+
+    <p><strong>Pluralization</strong></p>
+
+    <p>To translate pluralized messages, use the transChoice() method:</p>
+
+{% raw %}<pre><code>$t = $this-&gt;get('translator')-&gt;transChoice(
+    'There is one apple|There are %count% apples',
+    10,
+    array('%count%' =&gt; 10)
+);
+</code></pre>{% endraw %}
+
+    <h3>Translations in Templates</h3>
+
+    <p>Translating in Twig templates example:</p>
+
+{% raw %}<pre><code>//you can set de translation domain for entire twig temples
+{% trans_default_domain "app" %}
+
+{% trans %}Hello %name%{% endtrans %}
+
+{% transchoice count %}
+    {0} There are no apples|{1} There is one apple|]1,Inf] There are %count% apples
+{% endtranschoice %}
+
+//variables traduction
+{{ message|trans }}
+
+{{ message|transchoice(5) }}
+
+{{ message|trans({'%name%': 'Fabien'}, "app") }}
+
+{{ message|transchoice(5, {'%name%': 'Fabien'}, 'app') }}
+</code></pre>{% endraw %}
+
+    <p>If you need to use the percent character (%) in a string, escape it by doubling it: {% raw %}{% trans %}Percent: %percent%%%{% endtrans %}{%  endraw %}</p>
+
+    <h3>Translating Database Content</h3>
+
+    <p>The translation of database content should be handled by Doctrine through the
+        <a href="https://github.com/l3pp4rd/DoctrineExtensions/blob/master/README.md">Translatable Extension</a></p>
+
+    <p><strong>Translating constraint messages</strong></p>
+
+{% raw %}<pre><code># src/Acme/BlogBundle/Resources/config/validation.yml
+Acme\BlogBundle\Entity\Author:
+    properties:
+        name:
+            - NotBlank: { message: "author.name.not_blank" }
+</code></pre>{% endraw %}
+
+    <p>Create a translation file under the validators catalog:</p>
+
+{% raw %}<pre><code>&lt;!-- validators.en.xliff --&gt;
+&lt;?xml version="1.0"?&gt;
+&lt;xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2"&gt;
+    &lt;file source-language="en" datatype="plaintext" original="file.ext"&gt;
+        &lt;body&gt;
+            &lt;trans-unit id="1"&gt;
+            &lt;source&gt;author.name.not_blank&lt;/source&gt;
+            &lt;target&gt;Please enter an author name.&lt;/target&gt;
+            &lt;/trans-unit&gt;
+        &lt;/body&gt;
+    &lt;/file&gt;
+&lt;/xliff&gt;
+</code></pre>{% endraw %}
+

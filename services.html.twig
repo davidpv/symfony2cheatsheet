@@ -1,0 +1,80 @@
+
+    <p>A Service Container (or dependency injection container) is simply a PHP object that manages the instantiation of services (i.e. objects).</p>
+
+{% raw %}<pre><code># src/Acme/HelloBundle/Resources/config/services.yml
+parameters:
+    newsletter_manager.class: Acme\HelloBundle\Newsletter\NewsletterManager
+    my_mailer.transport: sendmail
+    my_mailer.gateways:
+        - mail1
+        - mail2
+        - mail3
+
+services:
+    my_mailer:
+        class: "%my_mailer.class%"
+        arguments: [%my_mailer.transport%]
+    newsletter_manager:
+        class: "%newsletter_manager.class%"
+        arguments: [@my_mailer] //required contructor args. Use @ to refer another service.
+        calls:
+        - [ setMailer, [ @my_mailer ] ] //Optional dependencies.
+        tags:
+        - { name: twig.extension } //Twig finds all services tagged with twig.extension and automatically registers them as extensions.
+</code></pre>{% endraw %}
+
+    <p>Now we can set our class to be a real service:</p>
+
+{% raw %}<pre><code>namespace Acme\HelloBundle\Newsletter;
+
+use Symfony\Component\Templating\EngineInterface;
+
+class NewsletterManager
+{
+    protected $mailer;
+    protected $templating;
+
+    public function __construct(\Swift_Mailer $mailer, EngineInterface $templating)
+    {
+        $this-&gt;mailer = $mailer;
+        $this-&gt;templating = $templating;
+    }
+
+    // ...
+}
+</code></pre>{% endraw %}
+
+    <p>And for this particual service the corresponding services.yml would be:</p>
+
+{% raw %}<pre><code> services:
+    newsletter_manager:
+        class: "%newsletter_manager.class%"
+        arguments: [@mailer, @templating]
+</code></pre>{% endraw %}
+
+    <p>In YAML, the special @my_mailer syntax tells the container to look for a service named my_mailer and to pass that object into the constructor of NewsletterManager. In this case, however, the specified service my_mailer must exist. If it does not, an exception will be thrown. You can mark your dependencies as optional - this will be discussed in the next section</p>
+
+    <p><strong>Making References Optional</strong></p>
+
+{% raw %}<pre><code>services:
+    newsletter_manager:
+        class: "%newsletter_manager.class%"
+        arguments: [@?my_mailer]
+</code></pre>{% endraw %}
+
+    <h3>Debugging services</h3>
+
+    <p>You can find out what services are registered with the container using the console. To show all services and the class for each service, run:</p>
+
+{% raw %}<pre><code>$ php app/console container:debug
+$ php app/console container:debug --show-private
+$ php app/console container:debug my_mailer
+</code></pre>{% endraw %}
+
+    <p>See also:</p>
+
+    <ul>
+        <li>
+            <a href="http://symfony.com/doc/current/components/dependency_injection/parentservices.html">Managing Common Dependencies with Parent Services</a>
+        </li>
+    </ul>

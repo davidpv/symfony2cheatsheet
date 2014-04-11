@@ -1,0 +1,417 @@
+
+    <p>Symfony2 ships with a Validator component that makes this task easy and transparent.</p>
+
+{% raw %}<pre><code># src/Acme/BlogBundle/Resources/config/validation.yml
+Acme\BlogBundle\Entity\Author:
+properties:
+    name:
+        - NotBlank: ~
+</code></pre>{% endraw %}
+
+    <p>Protected and private properties can also be validated, as well as "getter" methods (see validatorconstraint-
+        targets).</p>
+
+    <h3>Using the validator Service</h3>
+
+{% raw %}<pre><code>// ...
+use Symfony\Component\HttpFoundation\Response;
+use Acme\BlogBundle\Entity\Author;
+
+public function indexAction()
+{
+    $author = new Author();
+
+    // ... do something to the $author object
+    $validator = $this-&gt;get('validator');
+    $errors = $validator-&gt;validate($author);
+
+    if (count($errors) &gt; 0) {
+        return new Response(print_r($errors, true));
+    } else {
+        return new Response('The author is valid! Yes!');
+    }
+}
+</code></pre>{% endraw %}
+
+    <p>Inside the template, you can output the list of errors exactly as needed:</p>
+
+{% raw %}<pre><code>{# src/Acme/BlogBundle/Resources/views/Author/validate.html.twig #}
+&lt;h3&gt;The author has the following errors&lt;/h3&gt;
+&lt;ul&gt;
+{% for error in errors %}
+&lt;li&gt;{{ error.message }}&lt;/li&gt;
+{% endfor %}
+&lt;/ul&gt;
+</code></pre>{% endraw %}
+
+    <h3>Validation and Forms</h3>
+
+    <p>The Symfony2 validator is enabled by default, but you must explicitly enable annotations if you're using
+        the annotation method to specify your constraints:</p>
+
+{% raw %}<pre><code># app/config/config.yml
+framework:
+    validation: { enable_annotations: true }
+</code></pre>{% endraw %}
+
+    <p>The good thing about annotations is that you write down all your entities validation in the entities .php in each entity PHPDOC so everything is in the same place.</p>
+
+    <h3>Constraints</h3>
+
+    <p>The validator is designed to validate objects against constraints (i.e. rules). In order to validate an
+        object, simply map one or more constraints to its class and then pass it to the validator service.</p>
+
+    <p><strong>Basic</strong></p>
+
+    <table>
+        <tr>
+            <th>YAML</th>
+            <th align="right">Annotation</th>
+        </tr>
+        <tr>
+            <td>NotBlank</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\NotBlank()
+            </td>
+        </tr>
+        <tr>
+            <td>Blank</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\Blank()
+            </td>
+        </tr>
+        <tr>
+            <td>NotNull</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\NotNull()
+            </td>
+        </tr>
+        <tr>
+            <td>Null</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\Null()
+            </td>
+        </tr>
+        <tr>
+            <td>True</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\True(message = "The token is invalid")
+            </td>
+        </tr>
+        <tr>
+            <td>False</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\False()
+            </td>
+        </tr>
+        <tr>
+            <td>Type</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\Type(type="integer", message="The value {% raw %}{{ value }}{%  endraw %} is not a valid {% raw %}{{ type }}{% endraw %}.")
+            </td>
+        </tr>
+    </table>
+    <p><strong>String</strong></p>
+
+    <table>
+        <tr>
+            <th>YAML</th>
+            <th align="right">Annotation</th>
+        </tr>
+        <tr>
+            <td>Email</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\Email(message = "The email '{% raw %}{{ value }}{%  endraw %}' is not a valid email.", checkMX = true, checkHost = true)
+            </td>
+        </tr>
+        <tr>
+            <td>MinLength</td>
+            <td align="right">Assert\MinLength(limit=3, message="Your name must have at least {% raw %}{{ limit }}{%  endraw %} characters.")</td>
+        </tr>
+        <tr>
+            <td>MaxLength</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\MaxLength(100)
+            </td>
+        </tr>
+        <tr>
+            <td>Length</td>
+            <td align="right">
+                <a href="https://github.com/Assert" class="user-mention">@Assert</a>\Length( min = "2",max = "50", minMessage = "msg", maxMessage = "msg" )
+            </td>
+        </tr>
+        <tr>
+            <td>Url</td>
+            <td align="right">@Assert\Url(message="msg1", protocolos=array('http','https')</td>
+        </tr>
+        <tr>
+            <td>Regex</td>
+            <td align="right">@Assert\Regex("/^\w+/") =&gt; options (pattern, match, message)</td>
+        </tr>
+        <tr>
+            <td>Ip</td>
+            <td align="right">@Assert\Ip</td>
+        </tr>
+    </table>
+    <p><strong>Number</strong></p>
+
+    <table>
+        <tr>
+            <th>YAML</th>
+            <th align="right">Annotation</th>
+        </tr>
+        <tr>
+            <td>Max</td>
+            <td align="right">@Assert\Max(limit=5, message="msg1")</td>
+        </tr>
+        <tr>
+            <td>Min</td>
+            <td align="right">@Assert\Min(limit=5, message="msg1")</td>
+        </tr>
+        <tr>
+            <td>Range</td>
+            <td align="right">@Assert\Range(min = "120", max = "180",minMessage = "msg",maxMessage = "msg")</td>
+        </tr>
+    </table>
+    <p><strong>Date</strong></p>
+
+    <table>
+        <tr>
+            <th>YAML</th>
+            <th align="right">Annotation</th>
+        </tr>
+        <tr>
+            <td>Date</td>
+            <td align="right">@Assert\Date()</td>
+        </tr>
+        <tr>
+            <td>DateTime</td>
+            <td align="right">@Assert\DateTime()</td>
+        </tr>
+        <tr>
+            <td>Time</td>
+            <td align="right">@Assert\Time()</td>
+        </tr>
+    </table>
+    <p><strong>Collection</strong></p>
+
+    <table>
+        <tr>
+            <th>YAML</th>
+            <th align="right">Annotation</th>
+        </tr>
+        <tr>
+            <td>Choice</td>
+            <td align="right">@Assert\Choice(choices = {"male", "female"}, message = "Choose a valid gender.")</td>
+        </tr>
+        <tr>
+            <td>Collection</td>
+            <td align="right">
+                <a href="http://symfony.com/doc/current/reference/constraints/Collection.html">http://symfony.com/doc/current/reference/constraints/Collection.html</a>
+            </td>
+        </tr>
+        <tr>
+            <td>Count</td>
+            <td align="right">@Assert\Count(min = "1", max = "5", minMessage = "msg", maxMessage = "msg" )</td>
+        </tr>
+        <tr>
+            <td>UniqueEntity</td>
+            <td align="right">@ORM\Column(name="email", type="string", length=255, unique=true) (Suppose you have an AcmeUserBundle bundle with a User entity that has an email field. You can use the UniqueEntity constraint to guarantee that the email field remains unique between all of the constraints in your user table)</td>
+        </tr>
+        <tr>
+            <td>Language</td>
+            <td align="right">@Assert\Language (Validates that it is a valid language code)</td>
+        </tr>
+        <tr>
+            <td>Locale</td>
+            <td align="right">@Assert\Locale (Validates a valid Locale code (ej : ISO639-1)</td>
+        </tr>
+        <tr>
+            <td>Country</td>
+            <td align="right">@Assert\Country (Valid two letter country code)</td>
+        </tr>
+    </table>
+    <p><strong>File</strong></p>
+
+    <table>
+        <tr>
+            <th>YAML</th>
+            <th align="right">Annotation</th>
+        </tr>
+        <tr>
+            <td>File</td>
+            <td align="right">Assert\File(maxSize = "1024k",mimeTypes = {"application/pdf", "application/x-pdf"},mimeeTypesMessage = "msg")
+                <a href="http://symfony.com/doc/current/reference/constraints/File.html">http://symfony.com/doc/current/reference/constraints/File.html</a>
+            </td>
+        </tr>
+        <tr>
+            <td>Image</td>
+            <td align="right">@Assert\Image(minWidth = 200, maxWidth = 400, minHeight = 200, maxHeight = 400)
+                <a href="http://symfony.com/doc/current/reference/constraints/Image.html">http://symfony.com/doc/current/reference/constraints/Image.html</a>
+            </td>
+        </tr>
+    </table>
+    <p><strong>Other</strong></p>
+
+    <table>
+        <tr>
+            <th>YAML</th>
+            <th align="right">Annotation</th>
+        </tr>
+        <tr>
+            <td>Callback</td>
+            <td align="right">@Assert\Callback(methods={"isAuthorValid"})</td>
+        </tr>
+        <tr>
+            <td>All</td>
+            <td align="right">@Assert\All({ @Assert\NotBlank @Assert\MinLength(5),}) (Aplies all constraints to each element of the Transversable object)</td>
+        </tr>
+        <tr>
+            <td>UserPassword</td>
+            <td align="right">@SecurityAssert\UserPassword(message = "Wrong password") (This validates that an input value is equal to the current authenticated user's password.)</td>
+        </tr>
+        <tr>
+            <td>Valid</td>
+            <td align="right">This constraint is used to enable validation on objects that are embedded as properties on an object being validated. This allows you to validate an object and all sub-objects associated with it.
+                <a href="http://symfony.com/doc/current/reference/constraints/Valid.html">http://symfony.com/doc/current/reference/constraints/Valid.html</a>
+            </td>
+        </tr>
+    </table>
+    <h4>Callback validations</h4>
+
+{% raw %}<pre><code>// src/Acme/BlogBundle/Entity/Author.php
+use Symfony\Component\Validator\Constraints as Assert;
+
+/**
+* @Assert\Callback(methods={"isAuthorValid"})
+*/
+class Author
+{
+}
+</code></pre>{% endraw %}
+
+    <p>If the name of a method is a simple string (e.g. isAuthorValid), that method will be called on the same object that's being validated and the ExecutionContext will be the only argument (see the above example).</p>
+
+{% raw %}<pre><code>use Symfony\Component\Validator\ExecutionContext;
+
+class Author
+{
+    // ...
+    private $firstName;
+
+    public function isAuthorValid(ExecutionContext $context)
+    {
+        // somehow you have an array of "fake names"
+        $fakeNames = array();
+
+        // check if the name is actually a fake name
+        if (in_array($this-&gt;getFirstName(), $fakeNames)) {
+            $context-&gt;addViolationAtSubPath('firstname', 'This name sounds totally fake!', array(), null);
+        }
+    }
+}
+</code></pre>{% endraw %}
+
+    <p>You can define more complex validation in the repository class of the entity:</p>
+
+{% raw %}<pre><code>// src/Acme/BlogBundle/Entity/Author.php
+use Symfony\Component\Validator\Constraints as Assert;
+
+/**
+* @Assert\Callback(methods={
+* { "Acme\BlogBundle\MyStaticValidatorClass", "isAuthorValid"}
+* })
+*/
+class Author
+{
+}
+</code></pre>{% endraw %}
+
+    <p>In this case, the static method isAuthorValid will be called on the Acme\BlogBundle\MyStaticValidatorClass class. It's passed both the original object being validated (e.g. Author) as well as the ExecutionContext:</p>
+
+{% raw %}
+<pre><code>namespace Acme\BlogBundle;
+
+use Symfony\Component\Validator\ExecutionContext;
+use Acme\BlogBundle\Entity\Author;
+
+class MyStaticValidatorClass
+{
+    static public function isAuthorValid(Author $author, ExecutionContext $context)
+    {
+    // ...
+    }
+}
+</code></pre>{% endraw %}
+
+    <h4>Translating constraint messages</h4>
+
+    <p>Create a translation file under the validators catalog for the constraint messages, typically in the Resources/translations/ directory of the bundle.</p>
+
+{% raw %}<pre><code> &lt;!-- validators.es.xliff --&gt;
+&lt;?xml version="1.0"?&gt;
+&lt;xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2"&gt;
+&lt;file source-language="en" datatype="plaintext" original="file.ext"&gt;
+&lt;body&gt;
+&lt;trans-unit id="1"&gt;
+&lt;source&gt;author.gender.choice&lt;/source&gt;
+&lt;target&gt;Escoge un género válido.&lt;/target&gt;
+&lt;/trans-unit&gt;
+&lt;/body&gt;
+&lt;/file&gt;
+&lt;/xliff&gt;
+</code></pre>{% endraw %}
+
+    <h3>Validation groups</h3>
+
+{% raw %}<pre><code># src/Acme/BlogBundle/Resources/config/validation.yml
+Acme\BlogBundle\Entity\User:
+    properties:
+        email:
+            - Email: { groups: [registration] }
+    password:
+        - NotBlank: { groups: [registration] }
+        - MinLength: { limit: 7, groups: [registration] }
+    city:
+        - MinLength: 2
+</code></pre>{% endraw %}
+
+    <p>With this configuration, there are two validation groups:</p>
+
+    <ul>
+        <li>Default - contains the constraints not assigned to any other group;</li>
+        <li>
+            <p>registration - contains the constraints on the email and password fields only.</p>
+
+            {% raw %}
+            <pre><code>$errors = $validator-&gt;validate($author, array('registration'));
+            </code></pre>{% endraw %}
+        </li>
+    </ul>
+    <h3>Validating Values and Arrays</h3>
+
+    <p>Sometimes, you just want to validate a simple value - like to verify that a string is a valid email address.</p>
+
+{% raw %}<pre><code>// add this to the top of your class
+use Symfony\Component\Validator\Constraints\Email;
+
+public function addEmailAction($email)
+{
+    $emailConstraint = new Email();
+
+    // all constraint "options" can be set this way
+    $emailConstraint-&gt;message = 'Invalid email address';
+
+    // use the validator to validate the value
+    $errorList = $this-&gt;get('validator')-&gt;validateValue($email, $emailConstraint);
+
+    if (count($errorList) == 0) {
+        // this IS a valid email address, do something
+    } else {
+        // this is *not* a valid email address
+        $errorMessage = $errorList[0]-&gt;getMessage()
+        // ... do something with the error
+    }
+    // ...
+}
+</code></pre>{% endraw %}

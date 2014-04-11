@@ -1,0 +1,100 @@
+{% extends "SymfonyCheatSheetBundle::layout.html.twig" %}
+
+{% block content %}
+
+    <div class="inner">
+
+        <div id="controller">
+            <header>
+                <div id="title">Symfony2cheatsheet</div>
+                <h1>Finally, a Symfony2 guide to make your work easier.</h1>
+                <span class="version">v 2.1.*</span>
+            </header>
+
+            {#<section id="downloads" class="clearfix">#}
+            {#<a href="{{ asset('/uploads/Symfony_2_cheat_sheet.pdf') }}" onClick="_gaq.push(['_trackEvent', 'Others', 'Download PDF']);" target="_blank" id="download-zip" class="button"><span>Download PDF</span></a>#}
+            {#</section>#}
+
+            <div class="nav-container">
+                <nav>
+                    <ul class="nav nav-pills">
+                        <li>
+                            <a href="#controller" onClick="_gaq.push(['_trackEvent', 'Menu', 'Controller']);">Controller</a>
+                        </li>
+                        <li><a href="#routing" onClick="_gaq.push(['_trackEvent', 'Menu', 'Routing']);">Routing</a></li>
+                        <li>
+                            <a href="#templating" onClick="_gaq.push(['_trackEvent', 'Menu', 'Templating']);">Templating</a>
+                        </li>
+                        <li><a href="#doctrine" onClick="_gaq.push(['_trackEvent', 'Menu', 'Doctrine']);">Doctrine</a>
+                        </li>
+                        <li><a href="#testing" onClick="_gaq.push(['_trackEvent', 'Menu', 'Testing']);">Testing</a></li>
+                        <li>
+                            <a href="#validation" onClick="_gaq.push(['_trackEvent', 'Menu', 'Validation']);">Validation</a>
+                        </li>
+                        <li><a href="#forms" onClick="_gaq.push(['_trackEvent', 'Menu', 'Forms']);">Forms</a></li>
+                        <li><a href="#security" onClick="_gaq.push(['_trackEvent', 'Menu', 'Security']);">Security</a>
+                        </li>
+                        <li><a href="#cache" onClick="_gaq.push(['_trackEvent', 'Menu', 'Cache']);">Cache</a></li>
+                        <li>
+                            <a href="#translations" onClick="_gaq.push(['_trackEvent', 'Menu', 'Translations']);">Translations</a>
+                        </li>
+                        <li><a href="#services" onClick="_gaq.push(['_trackEvent', 'Menu', 'Services']);">Services</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <div id="scroll">
+            <section id="main_content">
+                <hr>
+                <h2 id="controller">CONTROLLER <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:controller.html.twig" %}
+
+                <hr>
+                <h2 id="routing">ROUTING <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:routing.html.twig" %}
+
+                <hr>
+                <h2 id="templating">TEMPLATING and TWIG <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:templating.html.twig" %}
+
+                <hr>
+                <h2 id="doctrine">DOCTRINE <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:doctrine.html.twig" %}
+
+                <hr>
+                <h2 id="testing">PHP UNIT TESTING <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:testing.html.twig" %}
+
+                <hr>
+                <h2 id="validation">VALIDATION <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:validation.html.twig" %}
+
+                <hr>
+                <h2 id="forms">FORMS <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:forms.html.twig" %}
+
+                <hr>
+                <h2 id="security">SECURITY <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:security.html.twig" %}
+
+                <hr>
+                <h2 id="cache">HTTP Cache <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:cache.html.twig" %}
+
+                <hr>
+                <h2 id="translations">Translation <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:translations.html.twig" %}
+
+                <hr>
+                <h2 id="services">Service Container <a href="#top" class="small">back to top</a></h2>
+                {% include "SymfonyCheatSheetBundle:Default:services.html.twig" %}
+
+            </section>
+        </div>
+    </div>
+
+{% endblock %}
+
+

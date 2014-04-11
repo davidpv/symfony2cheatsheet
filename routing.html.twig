@@ -1,0 +1,53 @@
+
+            <p>Routing in Symfony 2 is even easier than in Symfony 1.x. Here is an example of the most complex routing you can get in Symfony 2.</p>
+
+{% raw %}
+<pre><code>article_show:
+    pattern: /{_locale}/article-details/{page}.{_format}
+    defaults: {_controller:Bundle:Controller:Action, _format: html, page:1}
+    requirements:
+        _locale: en|fr
+        _format: html|rss
+        page: \d+
+        _scheme: http|https
+</code></pre>{% endraw %}
+            <p>Also you can prefix imported routes and give a group of routes a prepend text:</p>
+
+{% raw %}
+<pre><code>#app/config/routing.yml
+    acme_hello:
+    resource: "@AcmeHelloBundle/Resources/config/routing.yml"
+    prefix: /admin
+</code></pre>{% endraw %}
+
+            <h4>Working with annotations</h4>
+<p>You can use <strong>annotations</strong> in your controller by enabling annotations in your <strong>routing.yml</strong> and in your <strong>config.yml</strong></p>
+
+<pre><code>#config.yml
+sensio_framework_extra:
+    router:  { annotations: true }
+    request: { converters: true }
+    view:    { annotations: true }
+    cache:   { annotations: true }
+</code></pre>
+
+<pre><code>#routing.yml
+acmedemo_main:
+    resource: "@AcmeDemoWebBundle/Controller"
+    prefix:   /
+    type: annotation
+</code></pre>
+
+            <p>In your controller:</p>
+<pre><code>/**
+* @Route("/{_locale}/", name="localizedHomepage")
+* @Method("POST")
+* @param $name
+* @Template("AcmeDemoWebBundle:Web:index.html.twig")
+* @Cache(expires="+30 days")
+*/
+public function localizedHomepageAction($name)
+{
+    return array('name' => $name);
+}
+</code></pre>

@@ -1,0 +1,414 @@
+
+    <h3>Creating simple forms</h3>
+
+{% raw %}<pre><code>// src/Acme/TaskBundle/Controller/DefaultController.php
+namespace Acme\TaskBundle\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Acme\TaskBundle\Entity\Task;
+use Symfony\Component\HttpFoundation\Request;
+
+class DefaultController extends Controller
+{
+    public function newAction(Request $request)
+    {
+    // create a task and give it some dummy data for this example
+    $task = $this->createForm(new Task());
+    $task-&gt;setTask('Write a blog post');
+    $task-&gt;setDueDate(new \DateTime('tomorrow'));
+
+    $form = $this-&gt;createFormBuilder($task)
+        -&gt;add('task', 'text')
+        -&gt;add('dueDate', 'date')
+        -&gt;getForm();
+
+    return $this-&gt;render('AcmeTaskBundle:Default:new.html.twig', array(
+        'form' =&gt; $form-&gt;createView()
+    ));
+
+    }
+}
+</code></pre>{% endraw %}
+
+    <h3>Creating form classes and embedding subform</h3>
+
+{% raw %}<pre><code>// src/Acme/TaskBundle/Form/Type/TaskType.php
+namespace Acme\TaskBundle\Form\Type;
+
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+
+class TaskType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options)
+    {
+        $builder-&gt;add('task');
+        $builder-&gt;add('dueDate', null, array('widget' =&gt; 'single_text'));
+
+        //Any extra field not mapped to the object must define property_path.
+        $builder-&gt;add('agree','checkbox', array('property_path' =&gt; false));
+
+        //Embedding one form, you need to create first the categoryType class as usual.
+        $builder-&gt;add('category', new CategoryType());
+
+        //Embedding a collection of TAGS forms. You already have a tagType form.
+        $builder-&gt;add('tags', 'collection', array('type' =&gt; new TagType()));
+
+    }
+
+    public function getName()
+    {
+        return 'task'; //must be unique.
+    }
+
+    //Symfony can guess the type but it is a good practice to always set de data_class because embedding forms is necessary.
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    {
+        $resolver-&gt;setDefaults(array(
+            'data_class' =&gt; 'Acme\TaskBundle\Entity\Task',
+            'cascade_validation' =&gt; true, //needed to validate embeed forms.
+            'validation_groups' =&gt; array('registration'), //use of validation groups.
+            'csrf_protection' =&gt; true,
+            'csrf_field_name' =&gt; '_token',
+            // a unique key to help generate the secret token
+            'intention' =&gt; 'task_item',
+        ));
+    }
+
+}
+</code></pre>{% endraw %}
+
+    <p>Field Type Options</p>
+
+{% raw %}<pre><code>-&gt;add('dueDate', 'date', array(
+    'widget' =&gt; 'single_text',
+    'label' =&gt; 'Due Date'
+))
+</code></pre>{% endraw %}
+
+    <p>The field data can be accessed in a controller with:</p>
+
+{% raw %}<pre><code>$form-&gt;get('dueDate')-&gt;getData();
+</code></pre>{% endraw %}
+
+    <p>If, for some reason, you don't have access to your original $task object, you can fetch it from the form:</p>
+
+{% raw %}<pre><code>$task = $form-&gt;getData();
+</code></pre>{% endraw %}
+
+    <p>Using form classes in a controller:</p>
+
+{% raw %}<pre><code>$form = $this-&gt;createForm(new TaskType(), new Task());
+
+// process the form on POST
+if ($request-&gt;isMethod('POST')) {
+
+//you can access POST variables directly
+$this-&gt;get('request')-&gt;request-&gt;get('name');
+
+$form-&gt;bind($request);
+
+if ($form-&gt;isValid()) {
+    $em = $this-&gt;getDoctrine()-&gt;getManager();
+    $em-&gt;persist($task);
+    $em-&gt;flush();
+}
+}
+
+return $this-&gt;render('AcmeTaskBundle:Task:new.html.twig', array(
+    'form' =&gt; $form-&gt;createView()
+));
+</code></pre>{% endraw %}
+
+    <h3>Groups based on Submitted Data</h3>
+
+    <p>The ability to specify a callback or Closure in validation_groups is new to version 2.1</p>
+
+{% raw %}<pre><code>public function setDefaultOptions(OptionsResolverInterface $resolver)
+{
+    $resolver-&gt;setDefaults(array(
+        'validation_groups' =&gt; array('Acme\\AcmeBundle\\Entity\\Client', 'determineValidationGroups'),
+    ));
+}
+</code></pre>{% endraw %}
+
+    <p>This will call the static method determineValidationGroups() on the Client class after the form is bound, but before validation is executed.
+        The Form object is passed as an argument to that method (see next example). You can also define whole logic inline by using a Closure:</p>
+
+    <p>You can use inline post validation also:</p>
+
+{% raw %}<pre><code>public function setDefaultOptions(OptionsResolverInterface $resolver)
+{
+    $resolver-&gt;setDefaults(array(
+        'validation_groups' =&gt; function(FormInterface $form) {
+            $data = $form-&gt;getData();
+            if (Entity\Client::TYPE_PERSON == $data-&gt;getType()) {
+                return array('person');
+            } else {
+                return array('company');
+            }
+        },
+    ));
+}
+</code></pre>{% endraw %}
+
+    <h3>Rendering forms in TWIG</h3>
+
+    <p>First of all check all Form Type References</p>
+
+    <p>
+        <a href="http://symfony.com/doc/current/reference/forms/types.html">http://symfony.com/doc/current/reference/forms/types.html</a>
+    </p>
+
+    <div class="row">
+
+        <div class="span6">
+    <p><strong>Text field</strong></p>
+
+    <table>
+        <tr>
+            <th>Widget</th>
+            <th>Widget</th>
+        </tr>
+        <tr>
+            <td>text</td>
+            <td>textarea</td>
+        </tr>
+        <tr>
+            <td>textarea</td>
+            <td>integer</td>
+        </tr>
+        <tr>
+            <td>email</td>
+            <td>money</td>
+        </tr>
+        <tr>
+            <td>number</td>
+            <td>password</td>
+        </tr>
+        <tr>
+            <td>percent</td>
+            <td>search</td>
+        </tr>
+    </table>
+
+            <p><strong>Choice fields</strong></p>
+
+    <table>
+        <tr>
+            <th>Widget</th>
+            <th>Widget</th>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/choice.html">choice</a></td>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/entity.html">entity</a></td>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/country.html">country</a></td>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/language.html">language</a></td>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/locale.html">locale</a></td>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/timezone.html">timezone</a></td>
+        </tr>
+    </table>
+
+        </div>
+
+        <div class="span6">
+
+    <p><strong>Date and datetime fields</strong></p>
+
+    <table>
+        <tr>
+            <th>Widget</th>
+            <th>Widget</th>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/date.html">date</a></td>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/datetime.html">datetime</a></td>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/time.html">time</a></td>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/birthday.html">birthday</a></td>
+        </tr>
+    </table>
+
+
+
+    <p><strong>Other fields</strong></p>
+
+    <table>
+        <tr>
+            <th>Widget</th>
+            <th>Widget</th>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/checkbox.html">checkbox</a></td>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/file.html">file</a></td>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/radio.html">radio</a></td>
+            <td></td>
+        </tr>
+    </table>
+    <p><strong>Field groups</strong></p>
+
+    <table>
+        <tr>
+            <th>Widget</th>
+            <th>Widget</th>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/collection.html">collection</a></td>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/repeated.html">repeated</a></td>
+        </tr>
+    </table>
+    <p><strong>Hidden fields</strong></p>
+
+    <table>
+        <tr>
+            <th>Widget</th>
+            <th>Widget</th>
+        </tr>
+        <tr>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/hidden.html">hidden</a></td>
+            <td><a href="http://symfony.com/doc/current/reference/forms/types/csrf.html">csrf</a></td>
+        </tr>
+    </table>
+    </div>
+        </div>
+
+
+
+    <h4>Simple and fast</h4>
+
+{% raw %}<pre><code>&lt;form action="{{ path('task_new') }}" method="post" {{ form_enctype(form) }}&gt;
+{{ form_widget(form) }}
+&lt;input type="submit" /&gt;
+&lt;/form&gt;
+</code></pre>{% endraw %}
+
+    <h4>Rows</h4>
+
+{% raw %}<pre><code>&lt;form action="{{ path('task_new') }}" method="post" {{ form_enctype(form) }}&gt;
+{{ form_errors(form) }}
+
+{{ form_row(form.task) }}
+{{ form_row(form.dueDate) }}
+
+{{ form_rest(form) }}
+
+&lt;input type="submit" /&gt;
+&lt;/form&gt;
+</code></pre>{% endraw %}
+
+    <h4>Manual</h4>
+
+{% raw %}
+<pre><code>&lt;form action="{{ path('task_new') }}" method="post" {{ form_enctype(form) }}&gt;
+{{ form_errors(form) }}
+&lt;div&gt;
+    {{ form_label(form.task,'custom label') }}
+    {{ form_errors(form.task) }}
+    {{ form_widget(form.task, { 'attr': {'class': 'span3'} })) }}
+&lt;/div&gt;
+&lt;div&gt;
+    {{ form_label(form.dueDate) }}
+    {{ form_errors(form.dueDate) }}
+    {{ form_widget(form.dueDate) }}
+&lt;/div&gt;
+
+{# Render one embedded form #}
+&lt;h3&gt;Category&lt;/h3&gt;
+&lt;div class="category"&gt;
+    {{ form_row(form.category.name) }}
+&lt;/div&gt;
+
+{# Render multiple embedded forms #}
+&lt;h3&gt;Tags&lt;/h3&gt;
+&lt;ul class="tags"&gt;
+    {% for tag in form.tags %}
+    &lt;li&gt;{{ form_row(tag.name) }}&lt;/li&gt;
+    {% endfor %}
+&lt;/ul&gt;
+
+{{ form_rest(form) }}
+
+&lt;/form&gt;
+</code></pre>{% endraw %}
+
+    <h4>Access "name" and "id" attributes</h4>
+
+{% raw %}<pre><code>{{ form.task.vars.id }}
+{{ form.task.vars.full_name }}
+</code></pre>{% endraw %}
+
+    <p>You can access current data of your form via:</p>
+
+{% raw %}<pre><code>{{ form.vars.value.task }}
+</code></pre>{% endraw %}
+
+    <h3>Form Theming</h3>
+
+    <p>In Twig, each form "fragment" is represented by a Twig block. To customize any part of how a form renders, you just need to override the appropriate block.</p>
+
+    <p>To understand how this works, let's customize the form_row fragment and add a class attribute to the div element that surrounds each row. To do this, create a new template file that will store the new markup:</p>
+
+{% raw %}<pre><code>{# src/Acme/TaskBundle/Resources/views/Form/fields.html.twig #}
+{% block form_row %}
+    {% spaceless %}
+    &lt;div class="form_row"&gt;
+        {{ form_label(form) }}
+        {{ form_errors(form) }}
+        {{ form_widget(form) }}
+    &lt;/div&gt;
+    {% endspaceless %}
+{% endblock form_row %}
+</code></pre>{% endraw %}
+
+    <p>To tell the form component to use your new form_row fragment defined above, add the following to the top of the template that renders the form:</p>
+
+{% raw %}<pre><code>{# src/Acme/TaskBundle/Resources/views/Default/new.html.twig #}
+{% form_theme form 'AcmeTaskBundle:Form:fields.html.twig' %}
+{% form_theme form 'AcmeTaskBundle:Form:fields.html.twig' 'AcmeTaskBundle:Form:fields2.html.twig' %}
+&lt;form ...&gt;
+</code></pre>{% endraw %}
+
+    <p>New in version 2.1: An alternate Twig syntax for form_theme has been introduced in 2.1. It accepts any valid Twig expression (the most noticeable difference is using an array when using multiple themes).</p>
+
+{% raw %}
+<pre><code>{# src/Acme/TaskBundle/Resources/views/Default/new.html.twig #}
+{% form_theme form with 'AcmeTaskBundle:Form:fields.html.twig' %}
+{% form_theme form with ['AcmeTaskBundle:Form:fields.html.twig', 'AcmeTaskBundle:Form:fields2.html.twig'] %}
+</code></pre>{% endraw %}
+
+    <p>You can see all form fragments from twig followin this link:
+        <a href="https://github.com/symfony/symfony/tree/master/src/Symfony/Bundle/FrameworkBundle/Resources/views/Form">https://github.com/symfony/symfony/tree/master/src/Symfony/Bundle/FrameworkBundle/Resources/views/Form</a>
+    </p>
+
+    <p>If your form customizations live inside an external template, you can reference the base block by using the parent() Twig function:</p>
+
+{% raw %}<pre><code>{# src/Acme/DemoBundle/Resources/views/Form/fields.html.twig #}
+{% extends 'form_div_layout.html.twig' %}
+
+{% block integer_widget %}
+&lt;div class="integer_widget"&gt;
+    {{ parent() }}
+&lt;/div&gt;
+{% endblock %}
+</code></pre>{% endraw %}
+
+    <p>If you'd like a certain form customization to be global to your application, you can accomplish this by making the form customizations in an external template and then importing it inside your application configuration:</p>
+
+{% raw %}<pre><code># app/config/config.yml
+    twig:
+        form:
+            resources:
+                - 'AcmeDemoBundle:Form:fields.html.twig'
+</code></pre>{% endraw %}
+
+    <p>See more in:
+        <a href="http://symfony.com/doc/current/cookbook/form/form_customization.html">http://symfony.com/doc/current/cookbook/form/form_customization.html</a>
+    </p>

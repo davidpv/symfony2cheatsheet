@@ -1,0 +1,129 @@
+
+    <p>Here are some useful shortcuts and functions regarding the request object in Symfony 2 controllers.</p>
+
+    <h4>REQUEST and RESPONSE objects</h4>
+
+    <div class="row">
+
+        <div class="span6">
+
+{% raw %}
+<pre><code>$request-&gt;query-&gt;get('foo'); //gets foo GET var.
+$request-&gt;request-&gt;get('bar'); //gets POST var.
+$request-&gt;getMethod();
+
+$request-&gt;server-&gt;get('HTTP_HOST'); //server variables.
+$request-&gt;getPathInfo(); //gets the URI.
+$request-&gt;files-&gt;get('file'); //files posted in a form.
+
+$request-&gt;headers-&gt;get('content-type');
+$request-&gt;cookies-&gt;get('PHPSESSID'); //cookies
+
+$request-&gt;getLanguages();
+$request-&gt;getPreferedLanguage(array('es','fr'));
+$request-&gt;isXmlHttpRequest();
+</code></pre>{% endraw %}
+        </div>
+
+        <div class="span6">
+
+            <p>Redirecting in a controller:</p>
+
+{% raw %}
+<pre><code>$this-&gt;redirect($this-&gt;generateUrl("homepage"));
+</code></pre>{% endraw %}
+
+            <p>Rendering text from a controller:</p>
+
+{% raw %}
+<pre><code>return new Response('&lt;html&gt;…&lt;/html&gt;');
+</code></pre>{% endraw %}
+
+            <p>Forwarding:</p>
+
+{% raw %}
+<pre><code>return $this-&gt;forward('Bundle:Controller:Action');
+</code></pre>{% endraw %}
+
+            <p>Redirect to 404 not found:</p>
+
+{% raw %}
+<pre><code>throw $this-&gt;createNotFoundException(message);
+</code></pre>{% endraw %}
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="span6">
+
+            <h4>Working with the session</h4>
+
+            <p>You can manage session attributes with:</p>
+
+{% raw %}
+<pre><code>$session = $this-&gt;getRequest()-&gt;getSession();
+</code></pre>{% endraw %}
+
+            <p>or the shortcut version</p>
+
+{% raw %}
+<pre><code>$this-&gt;get('session');
+</code></pre>{% endraw %}
+
+            <p>and to work with the data:</p>
+
+{% raw %}
+<pre><code>$session-&gt;get('foo','default value');
+$session-&gt;set('foo','bar');
+</code></pre>{% endraw %}
+        </div>
+
+        <div class="span6">
+
+            <h4>Flash messages</h4>
+
+            <p>Flash messages only last one request and they are stored in a FlashBag:</p>
+
+{% raw %}
+<pre><code>$this-&gt;get('session')-&gt;getFlashBag()-&gt;add('notice','message');
+</code></pre>{% endraw %}
+
+            <p>To iterate trough all flash messages in a template you can use:</p>
+
+{% raw %}
+<pre><code>{% for flashMessage in app.session.flashbag.get('notice') %}
+    &lt;div class="flash notice"&gt;
+        {{ flashMessage }}
+    &lt;/div&gt;
+{% endfor %}
+</code></pre>{% endraw %}
+        </div>
+
+    </div>
+
+    <p>Finally, here is an example of a controller class with Request and Response object in use.</p>
+
+
+    {% raw %}<pre><code>namespace Symfony\CheatSheetBundle\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class DefaultController extends Controller
+{
+    public function indexAction()
+    {
+        return $this->render('SymfonyCheatSheetBundle:Default:index.html.twig');
+    }
+
+    public function contactAction(Request $request)
+    {
+        //get request variables.
+        //do something, call service, go to database, create form, send emails, etc...
+        return $this->render('SymfonyCheatSheetBundle:Default:feedback.html.twig', array([template vars]));
+    }
+}
+</code></pre>{% endraw %}
