@@ -104,6 +104,22 @@ class SecurityController extends Controller
 }
 </code></pre>{% endraw %}
 
+<b>Upate Since 2.6</b>
+ {% raw %}
+<pre><code>
+// Symfony 2.6
+public function loginAction()
+{
+    $helper = $this->get('security.authentication_utils');
+
+    return $this->render('AcmeSecurityBundle:Security:login.html.twig', array(
+        'last_username' => $helper->getLastUsername(),
+        'error'         => $helper->getLastAuthenticationError(),
+    ));
+}
+</code></pre>{% endraw %}
+
+
     <p>Finally, create the corresponding template:</p>
 
     <pre><code>{% filter escape %}{% raw %}{# src/Acme/SecurityBundle/Resources/views/Security/login.html.twig #}
@@ -168,8 +184,10 @@ public function helloAction($name)
     if (false === $this-&gt;get('security.context')-&gt;isGranted('ROLE_ADMIN')) {
         throw new AccessDeniedException();
     }
-
-// ...
+    //Since 2.6
+    if (false === $this->get('security.authorization_checker')->isGranted('ROLE_ADMIN')) {
+        throw new AccessDeniedException();
+    }
 }
 </code></pre>{% endraw %}
 
@@ -246,6 +264,11 @@ $user = new Acme\UserBundle\Entity\User();
 $encoder = $factory-&gt;getEncoder($user);
 $password = $encoder-&gt;encodePassword('ryanpass', $user-&gt;getSalt());
 $user-&gt;setPassword($password);
+
+//Since 2.6
+$user = new Acme\UserBundle\Entity\User();
+$encoder = $this->container->get('security.password_encoder');
+$password = $encoder->encodePassword($user, $plainTextPassword);
 </code></pre>{% endraw %}
 
     <h3>Retrieving the User Object</h3>
@@ -255,8 +278,12 @@ $user-&gt;setPassword($password);
 {% raw %}<pre><code>public function indexAction()
 {
     $user = $this-&gt;get('security.context')-&gt;getToken()-&gt;getUser();
+    //Since 2.6
+    $user = $this-&gt;get('security.token_storage')-&gt;getToken()-&gt;getUser();
     //or
     $user = $this-&gt;getUser();
+    
+    
 }
 </code></pre>{% endraw %}
 
