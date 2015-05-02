@@ -87,7 +87,7 @@ $session-&gt;set('foo','bar');
             <p>Flash messages only last one request and they are stored in a FlashBag:</p>
 
 {% raw %}
-<pre><code>$this-&gt;get('session')-&gt;getFlashBag()-&gt;add('notice','message');
+<pre><code>$this-&gt;addFlash('notice','message');
 </code></pre>{% endraw %}
 
             <p>To iterate trough all flash messages in a template you can use:</p>
