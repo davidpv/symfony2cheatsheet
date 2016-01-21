@@ -31,7 +31,10 @@ $request-&gt;isXmlHttpRequest();
 
 {% raw %}
 <pre><code>$this-&gt;redirect($this-&gt;generateUrl("homepage"));
-</code></pre>{% endraw %}
+// 2.6 and above
+$this->redirectToRoute('homepage');
+</code></pre>
+{% endraw %}
 
             <p>Rendering text from a controller:</p>
 
