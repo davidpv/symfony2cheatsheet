@@ -291,22 +291,19 @@ return $this-&gt;render('AcmeTaskBundle:Task:new.html.twig', array(
 
     <h4>Rows</h4>
 
-{% raw %}<pre><code>&lt;form action="{{ path('task_new') }}" method="post" {{ form_enctype(form) }}&gt;
+{% raw %}<pre><code>{{ form_start(form) }}
 {{ form_errors(form) }}
 
-{{ form_row(form.task) }}
-{{ form_row(form.dueDate) }}
+    {{ form_row(form.task) }}
+    {{ form_row(form.dueDate) }}
 
-{{ form_rest(form) }}
-
-&lt;input type="submit" /&gt;
-&lt;/form&gt;
+{{ form_end(form) }}
 </code></pre>{% endraw %}
 
     <h4>Manual</h4>
 
 {% raw %}
-<pre><code>&lt;form action="{{ path('task_new') }}" method="post" {{ form_enctype(form) }}&gt;
+<pre><code>{{ form_start(form) }}
 {{ form_errors(form) }}
 &lt;div&gt;
     {{ form_label(form.task,'custom label') }}
@@ -333,9 +330,7 @@ return $this-&gt;render('AcmeTaskBundle:Task:new.html.twig', array(
     {% endfor %}
 &lt;/ul&gt;
 
-{{ form_rest(form) }}
-
-&lt;/form&gt;
+{{ form_end(form) }}
 </code></pre>{% endraw %}
 
     <h4>Access "name" and "id" attributes</h4>
