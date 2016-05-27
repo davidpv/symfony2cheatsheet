@@ -284,10 +284,9 @@ return $this-&gt;render('AcmeTaskBundle:Task:new.html.twig', array(
 
     <h4>Simple and fast</h4>
 
-{% raw %}<pre><code>&lt;form action="{{ path('task_new') }}" method="post" {{ form_enctype(form) }}&gt;
+{% raw %}<pre><code>{{ form_start(form) }}
 {{ form_widget(form) }}
-&lt;input type="submit" /&gt;
-&lt;/form&gt;
+{{ form_end(form) }}
 </code></pre>{% endraw %}
 
     <h4>Rows</h4>
